@@ -28,6 +28,8 @@ while cap.isOpened():
     _, frame = cap.read()
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     mask = np.zeros_like(gray)
+    mask1 = np.zeros_like(gray)
+    mask2 = np.zeros_like(gray)
 
     faces = detector(gray)
 
@@ -42,9 +44,11 @@ while cap.isOpened():
         #cv2.polylines(frame, [hull1], True, (0, 255, 0), 1)
         #cv2.polylines(frame, [hull2], True, (0, 255, 0), 1)
 
-        cv2.fillConvexPoly(mask, hull1, 255)
-        cv2.fillConvexPoly(mask, hull2, 255)
+        cv2.fillConvexPoly(mask1, hull1, 255)
+        cv2.fillConvexPoly(mask2, hull2, 255)
 
+        face1 = cv2.bitwise_and(frame, frame, mask = mask1)
+        face2 = cv2.bitwise_and(frame, frame, mask = mask2)
         faces = cv2.bitwise_and(frame, frame, mask = mask)
 
         rectangle1 = cv2.boundingRect(hull1)
@@ -71,17 +75,17 @@ while cap.isOpened():
             pt2_t1 = (t1[2], t1[3])
             pt3_t1 = (t1[4], t1[5])
 
-            cv2.line(frame, pt1_t1, pt2_t1, (0, 0, 255), 2)
-            cv2.line(frame, pt2_t1, pt3_t1, (0, 0, 255), 2)
-            cv2.line(frame, pt1_t1, pt3_t1, (0, 0, 255), 2)
+            #cv2.line(frame, pt1_t1, pt2_t1, (0, 0, 255), 2)
+            #cv2.line(frame, pt2_t1, pt3_t1, (0, 0, 255), 2)
+            #cv2.line(frame, pt1_t1, pt3_t1, (0, 0, 255), 2)
 
             pt1_t2 = (t2[0], t2[1])
             pt2_t2 = (t2[2], t2[3])
             pt3_t2 = (t2[4], t2[5])
 
-            cv2.line(frame, pt1_t2, pt2_t2, (0, 0, 255), 2)
-            cv2.line(frame, pt2_t2, pt3_t2, (0, 0, 255), 2)
-            cv2.line(frame, pt1_t2, pt3_t2, (0, 0, 255), 2)
+            #cv2.line(frame, pt1_t2, pt2_t2, (0, 0, 255), 2)
+            #cv2.line(frame, pt2_t2, pt3_t2, (0, 0, 255), 2)
+            #cv2.line(frame, pt1_t2, pt3_t2, (0, 0, 255), 2)
 
             triangle1 = np.array([pt1_t1, pt2_t1, pt3_t1], dtype=np.int32)
             rect1 = cv2.boundingRect(triangle1)
@@ -117,12 +121,24 @@ while cap.isOpened():
 
             warped_triangle2 = cv2.warpAffine(cropped_triangle2, M2, (w2, h2))
 
-            cv2.imshow("t1 -> t2", warped_triangle1)
-            cv2.imshow("t1 -> t2", warped_triangle1)
+            triangle_area1 = face1[y1: y1 + h1, x1: x1 + w1]
+            triangle_area1 = cv2.add(triangle_area1, warped_triangle1)
+            face1[y1: y1 + h1, x1: x1 + w1] = triangle_area1
+
+            triangle_area2 = face2[y2: y2 + h2, x2: x2 + w2]
+            triangle_area2 = cv2.add(triangle_area2, warped_triangle2)
+            face2[y2: y2 + h2, x2: x2 + w2] = triangle_area2
+
+            #face1[y1: y1 + h1, x1: x1 + w1] = warped_triangle1
+
+            #face2[y2: y2 + h2, x2: x2 + w2] = warped_triangle1
+
+            #cv2.imshow("t1 -> t2", warped_triangle1)
+            #cv2.imshow("t1 -> t2", warped_triangle1)
 
             #new_face_2[y: y + h, x: x + w] = warped_triangle1
 
-            break
+            #break
 
             #triangle1 = np.array([pt1_t1, pt2_t1, pt3_t1], dtype=np.int32)
             #rect1 = cv2.boundingRect(triangle1)
@@ -131,26 +147,28 @@ while cap.isOpened():
 
             #break
 
-        #for t in triangles2:
-        #    pt1 = (t[0], t[1])
-        #    pt2 = (t[2], t[3])
-        #    pt3 = (t[4], t[5])
 
-        #    cv2.line(frame, pt1, pt2, (0, 0, 255), 2)
-        #    cv2.line(frame, pt2, pt3, (0, 0, 255), 2)
-        #    cv2.line(frame, pt1, pt3, (0, 0, 255), 2)
+        face1_gray = cv2.cvtColor(face1, cv2.COLOR_BGR2GRAY)
+        _, background1 = cv2.threshold(face1_gray, 1, 255, cv2.THRESH_BINARY_INV)
+        background1 = cv2.bitwise_and(face1, face1, mask = background1)
 
-        #    break
+        result1 = cv2.add(background1, face1)
 
-        #print(triangles_2)
+        face2_gray = cv2.cvtColor(face2, cv2.COLOR_BGR2GRAY)
+        _, background2 = cv2.threshold(face2_gray, 1, 255, cv2.THRESH_BINARY_INV)
+        background2 = cv2.bitwise_and(face2, face2, mask=background2)
 
+        result2 = cv2.add(background2, face2)
 
+        #cv2.imshow("Face swap", frame)
+        cv2.imshow("Face swap 1", result1)
+        cv2.imshow("Face swap 2", result2)
 
-        cv2.imshow("Face swap", frame)
+        #coś nie działa
 
     else:
         cv2.imshow("Face swap", frame)
 
-    key = cv2.waitKey(1)
+    key = cv2.waitKey(1000)
     if key == 27:
         break
