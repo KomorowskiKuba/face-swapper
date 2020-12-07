@@ -164,11 +164,9 @@ while cap.isOpened():
         cv2.imshow("Face swap 1", result1)
         cv2.imshow("Face swap 2", result2)
 
-        #coś nie działa
-
     else:
         cv2.imshow("Face swap", frame)
 
-    key = cv2.waitKey(1000)
+    key = cv2.waitKey(1)
     if key == 27:
         break
