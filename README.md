@@ -15,5 +15,6 @@ Project is created with:
 ## Setup
 To run this project:
 
+```
 $ cd ../face-swapper\
 $ python face-swapper.py
