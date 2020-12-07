@@ -10,7 +10,7 @@ This project will allow user to open a simple desktop app, which can swap faces 
 ## Technologies
 Project is created with:
 * Python 3.8
-* OpenCV
+* OpenCV, DLIB, Numpy
 	
 ## Setup
 To run this project:
